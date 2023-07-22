@@ -14,6 +14,7 @@ Nim VM, Virtual machine for compiling and interepreting the hanual bytecode. It 
         https://stackoverflow.com/questions/34427858/reading-bytes-from-many-files-performance
         https://nim-lang.org/docs/io.html
         https://nim-lang.org/docs/streams.html
+        https://nim-lang.org/docs/streams.html#readData%2CStream%2Cpointer%2Cint
 ]#
 
 # Imports
@@ -34,15 +35,28 @@ let S = "" # This register stores the status of the last instruction
 let O = "" # This register stores the origin of the previous instruction to act as a return pointer
 let R = "" # This register holds the return value of a called function
 
-# Attempt to read the main file
-try:
-  # 20 bytes is header, first 4 is the magic number. Dump/ignore everything else in the header for now.
-  var strm = newFileStream("test.txt", fmRead)
-  var line = ""
-  if not isNil(strm):
-    while strm.readLine(line):
-      echo line
-    strm.close()
+# Check if the main file exists
+let file = "test.txt"
+let error_advice = "\n [VM INFO]: There appears to be an error in executing your program, please check the hanual VM error doumentation for further details -> https://github.com/Goof-Labs/hanual/wiki/Errors-&-Warnings"
 
-except CatchableError:
-  echo "[VM ERROR]: The main file does not exist, touch the main.chnl file if you are on unix based systems. Thanks bye :]"
+try:
+  var strm = openFileStream(file)
+  let output = strm.readLine()
+  echo "[VM Success] Main file exists! Executing..."
+  strm.close()
+
+except:
+  let digest = getCurrentExceptionMsg()
+  echo "[VM ERROR]: The main file does not exist or cannot be read/opended, touch the main.chnl file if you are on unix based system or re-compile/compile your hanual program. Thanks bye :] \n"
+  echo "Error Digest: ", digest
+  echo error_advice
+  quit(2)
+
+# RUN the bytecode
+# 20 bytes is header, first 4 is the magic number. Dump/ignore everything else in the header for now.
+var strm = openFileStream(file, fmRead)
+var line = ""
+if not isNil(strm):
+  while strm.readLine(line):
+    echo line
+  strm.close()
