@@ -17,8 +17,9 @@ Nim VM, Virtual machine for compiling and interepreting the hanual bytecode. It 
 ]#
 
 # Imports
-import std/os
-import system/io
+import std/os # "OS" functions
+import system/io # System level i/o
+import std/streams # File and input streams
 
 # Add in the registers
 let A = "" # General purpose value store
@@ -35,9 +36,13 @@ let R = "" # This register holds the return value of a called function
 
 # Attempt to read the main file
 try:
-  let f = open("test.txt")
-  var buf: array[6, byte]
-  f.readBytes(buf, 8)
+  # 20 bytes is header, first 4 is the magic number. Dump/ignore everything else in the header for now.
+  var strm = newFileStream("test.txt", fmRead)
+  var line = ""
+  if not isNil(strm):
+    while strm.readLine(line):
+      echo line
+    strm.close()
 
 except CatchableError:
   echo "[VM ERROR]: The main file does not exist, touch the main.chnl file if you are on unix based systems. Thanks bye :]"
